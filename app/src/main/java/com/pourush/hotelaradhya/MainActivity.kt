@@ -18,6 +18,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -56,17 +58,42 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HotelWebView(modifier: Modifier = Modifier) {
-    AndroidView(
-        factory = { context ->
-            WebView(context).apply {
-                webViewClient = WebViewClient()
-                settings.javaScriptEnabled = true
-                loadUrl("https://hotelaradhya.co.in/")
+    val context = LocalContext.current
+    val isLoading = remember { mutableStateOf(true) }
+
+    Box(modifier = modifier) {
+        AndroidView(
+            factory = {
+                WebView(context).apply {
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            super.onPageFinished(view, url)
+                            isLoading.value = false
+                        }
+                    }
+                    settings.javaScriptEnabled = true
+                    loadUrl("https://hotelaradhya.co.in/")
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        if (isLoading.value) {
+            // Splash image
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = R.drawable.halogo),
+                    contentDescription = "Splash Logo"
+                )
             }
-        },
-        modifier = modifier
-    )
+        }
+    }
 }
+
 @Composable
 fun AppFooter() {
     val context = LocalContext.current
